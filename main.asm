@@ -120,6 +120,9 @@ BUTTONS = $00
 JUMPTIMER = $01
 CURRENT_GROUND = $03
 TMPX = $04
+COLLISION_FLAG = $05
+MOVE_DIRECTION = $06
+
 
 ReadController:
     lda #$01
@@ -135,17 +138,27 @@ ReadController:
         cpx #$08
         bne ReadLoop
     rts
+SetCollision:
+    lda #$01
+    jmp EndCheckCollision
+CheckCollision: ; Checks for collision and writes a #$00 or #$01 to COLLISION_FLAG
+    ldx PLAYERY
+    cpx CURRENT_GROUND
+    bcs SetCollision
+    lda #$00
+    EndCheckCollision:
+    sta COLLISION_FLAG
+    rts
 
-MoveRight:
-    inc PLAYERX
-    lda %01000000 ; Face Right
-    sta PLAYERATTR
-    jmp EndOfMoveRight
-MoveLeft:
-    dec PLAYERX
-    lda %00000000 ; Face Left
-    sta PLAYERATTR
-    jmp EndOfMoveLeft
+
+
+
+MultEightAddFive:
+    asl 
+    asl 
+    asl ; Multiply By 8
+    adc #$05 ; Add 5
+    jmp EndCheckCurrentGround
 MoveDown:
     inc PLAYERY
     jmp EndOfFall
@@ -153,6 +166,7 @@ ResetJumpTimer:
     lda #$00
     sta JUMPTIMER
     jmp EndOfFall
+
 MoveUp:
     dec PLAYERY ; Move Up Twice
     dec PLAYERY
@@ -163,13 +177,35 @@ JumpUp:
     cpx #$20
     bcc MoveUp
     jmp EndOfJumpUp
+MoveRight:
+    lda %01000000 ; Face Right
+    sta PLAYERATTR
+    lda #$01
+    sta MOVE_DIRECTION
+    jmp EndOfMoveLeftRight
+MoveLeft:
+    lda %00000000 ; Face Left
+    sta PLAYERATTR
+    lda #$ff
+    sta MOVE_DIRECTION
+    jmp EndOfMoveLeftRight
 
-MultEightAddFive:
-    asl 
-    asl 
-    asl ; Multiply By 8
-    adc #$05 ; Add 5
-    jmp EndCheckCurrentGround
+
+UndoFall:
+    dec PLAYERY
+    lda #$00
+    sta JUMPTIMER
+    ; sta COLLISION_FLAG
+    jmp EndOfFall
+
+UndoMove:
+    lda PLAYERX
+    clc
+    sbc MOVE_DIRECTION
+    sta PLAYERX
+    jmp EndOfMove
+
+; TODO: Decrease size between functions ^^^ and FrameLoop below vvv so that relative branching is in range
 
 FrameLoop:    
     ldx PLAYERX
@@ -185,25 +221,39 @@ FrameLoop:
     lda #$ff
     EndCheckCurrentGround:
     sta CURRENT_GROUND
-    
 
-    ldx PLAYERY
-    cpx CURRENT_GROUND
-    bcc MoveDowd
-    jmp ResetJumpTimer
+    inc PLAYERY
+    jsr CheckCollision
+    ldx COLLISION_FLAG
+    cpx #$01
+    beq UndoFall
     EndOfFall:
 
-    ; TODO: Add Collisions
+    lda #$00
+    sta MOVE_DIRECTION
 
     ; Movement for buttons
     lda #%10000000 ; Right Button
     bit BUTTONS
     bne MoveRight
-    EndOfMoveRight:
+
     lda #%01000000 ; Left Button
     bit BUTTONS
     bne MoveLeft
-    EndOfMoveLeft:
+
+    EndOfMoveLeftRight:
+    lda PLAYERX
+    clc
+    adc MOVE_DIRECTION
+    sta PLAYERX
+
+    jsr CheckCollision
+    ldx COLLISION_FLAG
+    cpx #$01
+    beq UndoMove
+
+    EndOfMove:
+
     lda #%00000001 ; A Button
     bit BUTTONS
     bne JumpUp
