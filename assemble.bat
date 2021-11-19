@@ -1,4 +1,4 @@
 @echo off
 
 cl65 -o out.nes -t nes main.asm
-fceux out.nes
+C:\Users\joega\Desktop\FCEUX\fceux64.exe out.nes
