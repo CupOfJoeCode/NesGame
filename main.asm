@@ -270,9 +270,9 @@ NMI:
     rti
 
 
-.include "level_data.asm"
+.include "game_data/level_data.asm"
 
-.include "graphics_data.asm"
+.include "game_data/graphics_data.asm"
 
 .segment "VECTORS"
     .word NMI
