@@ -237,6 +237,8 @@ UndoMove:
 ; TODO: 
 ;   Add multiple screens
 ;   Add enemies   
+;   Add sound
+;   Add music
 
 FrameLoop:    
     
@@ -292,7 +294,6 @@ FrameLoop:
     clc
     adc #$01
     sta PLAYERSPRITE
-
 
     
     rts
