@@ -123,7 +123,7 @@ TMPX = $04
 COLLISION_FLAG = $05
 MOVE_DIRECTION = $06
 REVERSE_MOVE_DIRECTION = $07
-
+RUN_TIMER = $08
 
 CheckCurrentGroud:
     ldx PLAYERX
@@ -197,6 +197,7 @@ MoveUp:
     jmp EndOfJumpUp
 
 MoveRight:
+    inc RUN_TIMER
     lda %01000000 ; Face Right
     sta PLAYERATTR
     lda #$01
@@ -205,6 +206,7 @@ MoveRight:
     sta REVERSE_MOVE_DIRECTION
     jmp EndOfMoveLeftRight
 MoveLeft:
+    inc RUN_TIMER
     lda %00000000 ; Face Left
     sta PLAYERATTR
     lda #$ff
@@ -233,7 +235,6 @@ UndoMove:
 
 
 ; TODO: 
-;   Add animations to player
 ;   Add multiple screens
 ;   Add enemies   
 
@@ -273,6 +274,9 @@ FrameLoop:
     cpx #$01
     beq UndoMove
 
+    
+
+
     EndOfMove:
 
     lda #%00000001 ; A Button
@@ -280,6 +284,16 @@ FrameLoop:
     bne JumpUp
     EndOfJumpUp:
     
+    lda RUN_TIMER
+    lsr
+    lsr
+    lsr
+    and #$03
+    clc
+    adc #$01
+    sta PLAYERSPRITE
+
+
     
     rts
 
