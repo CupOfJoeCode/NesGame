@@ -122,8 +122,29 @@ CURRENT_GROUND = $03
 TMPX = $04
 COLLISION_FLAG = $05
 MOVE_DIRECTION = $06
+REVERSE_MOVE_DIRECTION = $07
 
 
+CheckCurrentGroud:
+    ldx PLAYERX
+    txa 
+    lsr 
+    lsr
+    lsr ; Divide By 8
+    tax
+    lda LevelData,x
+    and #$0f
+    cmp #$0f
+    bne MultEightAddFive
+    lda #$ff
+    EndCheckCurrentGround:
+    sta CURRENT_GROUND
+    rts
+MoveBackTwice:
+    clc
+    adc REVERSE_MOVE_DIRECTION
+    clc
+    rts
 ReadController:
     lda #$01
     sta CONTROLLERREG
@@ -172,55 +193,48 @@ MoveUp:
     dec PLAYERY
     inc JUMPTIMER
     jmp EndOfJumpUp
-JumpUp:
-    ldx JUMPTIMER
-    cpx #$20
-    bcc MoveUp
-    jmp EndOfJumpUp
+
 MoveRight:
     lda %01000000 ; Face Right
     sta PLAYERATTR
     lda #$01
     sta MOVE_DIRECTION
+    lda #$ff
+    sta REVERSE_MOVE_DIRECTION
     jmp EndOfMoveLeftRight
 MoveLeft:
     lda %00000000 ; Face Left
     sta PLAYERATTR
     lda #$ff
     sta MOVE_DIRECTION
+    lda #$01
+    sta REVERSE_MOVE_DIRECTION
     jmp EndOfMoveLeftRight
-
+JumpUp:
+    ldx JUMPTIMER
+    cpx #$20
+    bcc MoveUp
+    jmp EndOfJumpUp
 
 UndoFall:
     dec PLAYERY
     lda #$00
     sta JUMPTIMER
-    ; sta COLLISION_FLAG
+    sta COLLISION_FLAG
     jmp EndOfFall
 
 UndoMove:
     lda PLAYERX
-    clc
-    sbc MOVE_DIRECTION
+    jsr MoveBackTwice
     sta PLAYERX
     jmp EndOfMove
+
 
 ; TODO: Decrease size between functions ^^^ and FrameLoop below vvv so that relative branching is in range
 
 FrameLoop:    
-    ldx PLAYERX
-    txa 
-    lsr 
-    lsr
-    lsr ; Divide By 8
-    tax
-    lda LevelData,x
-    and #$0f
-    cmp #$0f
-    bne MultEightAddFive
-    lda #$ff
-    EndCheckCurrentGround:
-    sta CURRENT_GROUND
+    
+    jsr CheckCurrentGroud
 
     inc PLAYERY
     jsr CheckCollision
@@ -230,6 +244,7 @@ FrameLoop:
     EndOfFall:
 
     lda #$00
+    sta REVERSE_MOVE_DIRECTION
     sta MOVE_DIRECTION
 
     ; Movement for buttons
@@ -245,8 +260,9 @@ FrameLoop:
     lda PLAYERX
     clc
     adc MOVE_DIRECTION
+    clc
     sta PLAYERX
-
+    jsr CheckCurrentGroud
     jsr CheckCollision
     ldx COLLISION_FLAG
     cpx #$01
