@@ -124,6 +124,7 @@ COLLISION_FLAG = $05
 MOVE_DIRECTION = $06
 REVERSE_MOVE_DIRECTION = $07
 RUN_TIMER = $08
+LIVES_COUNT = $09
 
 CheckCurrentGroud:
     ldx PLAYERX
@@ -294,6 +295,8 @@ FrameLoop:
     clc
     adc #$01
     sta PLAYERSPRITE
+
+    
 
     
     rts
