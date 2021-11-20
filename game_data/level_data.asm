@@ -1,21 +1,10 @@
 LevelData:
-    ; .byte $0D, $0C, $0B, $0B 
-    ; .byte $0B, $0B, $0C, $0D 
-    ; .byte $0F, $0F, $0F, $0F
-    ; .byte $0F, $0F, $0F, $0F
+    .byte $0A, $0A, $0A, $0A
+    .byte $0A, $0B, $0C, $0C
+    .byte $0C, $0F, $0F, $0F
+    .byte $0F, $0C, $0C, $0C
 
-    ; .byte $0A, $0A, $0B, $0B 
-    ; .byte $0C, $0F, $0F, $0D 
-    ; .byte $0D, $0C, $0B, $0B
-    ; .byte $0A, $0A, $09, $09
-
-
-    .byte $0E, $0E, $0E, $0E
-    .byte $0E, $0E, $0E, $0E
-    .byte $0F, $0F, $0F, $0F
-    .byte $0E, $0E, $0E, $0E
-
-    .byte $0D, $0C, $0B, $0B
-    .byte $0A, $0A, $0A, $0B
-    .byte $0B, $0C, $0D, $00
-    .byte $0E, $0E, $0E, $0E
+    .byte $0B, $0A, $0A, $09
+    .byte $09, $06, $06, $0F
+    .byte $0F, $0F, $0F, $06
+    .byte $06, $07, $07, $07
