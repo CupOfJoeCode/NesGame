@@ -128,6 +128,8 @@ REVERSE_MOVE_DIRECTION = $07
 CheckCurrentGroud:
     ldx PLAYERX
     txa 
+    clc
+    adc #$03
     lsr 
     lsr
     lsr ; Divide By 8
