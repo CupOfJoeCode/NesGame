@@ -306,8 +306,18 @@ FrameLoop:
     adc #$F0
     sta LIFECOUNTSPRITE
 
+    ldx PLAYERY
+    cpx #$F0
+    bcs Death
+    EndOfDeathCheck:
     
     rts
+Death:
+    dec LIVES_COUNT
+    lda #$08
+    sta PLAYERX
+    sta PLAYERY
+    jmp EndOfDeathCheck
 
 NMI:
     lda #$02 ; copy sprite data from $0200 => PPU memory for display
