@@ -232,7 +232,10 @@ UndoMove:
     jmp EndOfMove
 
 
-; TODO: Decrease size between functions ^^^ and FrameLoop below vvv so that relative branching is in range
+; TODO: 
+;   Add animations to player
+;   Add multiple screens
+;   Add enemies   
 
 FrameLoop:    
     
