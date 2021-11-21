@@ -30,6 +30,11 @@ RUN_TIMER = $08
 LIVES_COUNT = $09
 
 
+PLAYERY_HIGH  = $10
+PLAYERY_LOW   = $11
+PLAYERYV_HIGH = $12
+PLAYERYV_LOW  = $13
+
 :
     bit $2002
     bpl :-
@@ -124,6 +129,7 @@ ClearNametable:
 ; Game Start
     lda #$05
     sta LIVES_COUNT
+
 
 Loop:
     jmp Loop
@@ -251,11 +257,31 @@ FrameLoop:
     
     jsr CheckCurrentGroud
 
-    inc PLAYERY
-    jsr CheckCollision
-    ldx COLLISION_FLAG
-    cpx #$01
-    beq UndoFall
+    clc
+    lda PLAYERYV_LOW
+    adc #$05
+    sta PLAYERYV_LOW
+    lda PLAYERYV_HIGH
+    adc #$00
+    sta PLAYERYV_HIGH
+
+    clc
+    lda PLAYERY_LOW
+    adc PLAYERYV_LOW
+    sta PLAYERY_LOW
+    lda PLAYERY_HIGH
+    adc PLAYERYV_HIGH
+    sta PLAYERY_HIGH
+
+    lda PLAYERY_HIGH
+    sta PLAYERY
+
+
+    ; inc PLAYERY
+    ; jsr CheckCollision
+    ; ldx COLLISION_FLAG
+    ; cpx #$01
+    ; beq UndoFall
     EndOfFall:
 
     lda #$00
