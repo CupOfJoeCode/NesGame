@@ -241,6 +241,7 @@ UndoMove:
 
 
 ; TODO: 
+;   Improve gravity
 ;   Add multiple screens
 ;   Add enemies   
 ;   Add sound
