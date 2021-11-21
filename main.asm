@@ -245,6 +245,7 @@ UndoMove:
 
 
 ; TODO: 
+;   Fix player bobbing up and down
 ;   Add multiple screens
 ;   Add enemies   
 ;   Add sound
