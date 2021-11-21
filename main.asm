@@ -381,6 +381,10 @@ NMI:
 
 .include "game_data/graphics_data.asm"
 
+MusicData:
+    .incbin "game_data/music.bin"
+
+
 .segment "VECTORS"
     .word NMI
     .word Reset
