@@ -19,8 +19,9 @@ PLAYERSPRITE = SPRITESTART + 1
 LIFECOUNTSPRITE = SPRITESTART + 5
 
 
+
 BUTTONS = $00
-JUMPTIMER = $01
+GROUND_FLAG = $01
 CURRENT_GROUND = $03
 TMPX = $04
 COLLISION_FLAG = $05
@@ -28,6 +29,7 @@ MOVE_DIRECTION = $06
 REVERSE_MOVE_DIRECTION = $07
 RUN_TIMER = $08
 LIVES_COUNT = $09
+
 
 
 PLAYERY_HIGH  = $10
@@ -135,7 +137,42 @@ Loop:
     jmp Loop
 
 
+FallDown:
+    ; FALL
+    clc
+    lda PLAYERYV_LOW
+    adc #$0F
+    sta PLAYERYV_LOW
+    lda PLAYERYV_HIGH
+    adc #$00
+    sta PLAYERYV_HIGH
+    clc
+    lda PLAYERY_LOW
+    adc PLAYERYV_LOW
+    sta PLAYERY_LOW
+    lda PLAYERY_HIGH
+    adc PLAYERYV_HIGH
+    sta PLAYERY_HIGH
+    clc
+    rts
 
+FallUp:
+    clc
+    lda PLAYERY_LOW
+    sbc PLAYERYV_LOW
+    sta PLAYERY_LOW
+    lda PLAYERY_HIGH
+    sbc PLAYERYV_HIGH
+    sta PLAYERY_HIGH
+    clc
+    lda #$00
+    sta PLAYERYV_HIGH
+    sta PLAYERYV_LOW
+    sta PLAYERY_LOW
+    sta COLLISION_FLAG
+    clc
+    
+    rts
 
 CheckCurrentGroud:
     ldx PLAYERX
@@ -197,47 +234,8 @@ MultEightAddFive:
 MoveDown:
     inc PLAYERY
     jmp EndOfFall
-ResetJumpTimer:
-    lda #$00
-    sta JUMPTIMER
-    jmp EndOfFall
 
-MoveUp:
-    dec PLAYERY ; Move Up Twice
-    dec PLAYERY
-    inc JUMPTIMER
-    jmp EndOfJumpUp
 
-MoveRight:
-    inc RUN_TIMER
-    lda %01000000 ; Face Right
-    sta PLAYERATTR
-    lda #$01
-    sta MOVE_DIRECTION
-    lda #$ff
-    sta REVERSE_MOVE_DIRECTION
-    jmp EndOfMoveLeftRight
-MoveLeft:
-    inc RUN_TIMER
-    lda %00000000 ; Face Left
-    sta PLAYERATTR
-    lda #$ff
-    sta MOVE_DIRECTION
-    lda #$01
-    sta REVERSE_MOVE_DIRECTION
-    jmp EndOfMoveLeftRight
-JumpUp:
-    ldx JUMPTIMER
-    cpx #$20
-    bcc MoveUp
-    jmp EndOfJumpUp
-
-UndoFall:
-    dec PLAYERY
-    lda #$00
-    sta JUMPTIMER
-    sta COLLISION_FLAG
-    jmp EndOfFall
 
 UndoMove:
     lda PLAYERX
@@ -247,7 +245,6 @@ UndoMove:
 
 
 ; TODO: 
-;   Improve gravity
 ;   Add multiple screens
 ;   Add enemies   
 ;   Add sound
@@ -257,32 +254,23 @@ FrameLoop:
     
     jsr CheckCurrentGroud
 
-    clc
-    lda PLAYERYV_LOW
-    adc #$05
-    sta PLAYERYV_LOW
-    lda PLAYERYV_HIGH
-    adc #$00
-    sta PLAYERYV_HIGH
+    jsr FallDown
 
-    clc
-    lda PLAYERY_LOW
-    adc PLAYERYV_LOW
-    sta PLAYERY_LOW
-    lda PLAYERY_HIGH
-    adc PLAYERYV_HIGH
-    sta PLAYERY_HIGH
-
+    
+    jsr CheckCollision
+    ldx COLLISION_FLAG
+    sta GROUND_FLAG
+    cpx #$01
+    beq UndoFall
     lda PLAYERY_HIGH
     sta PLAYERY
-
-
-    ; inc PLAYERY
-    ; jsr CheckCollision
-    ; ldx COLLISION_FLAG
-    ; cpx #$01
-    ; beq UndoFall
+    jmp EndOfFall
+    UndoFall:
+        jsr FallUp
     EndOfFall:
+    lda PLAYERY_HIGH
+    sta PLAYERY
+    
 
     lda #$00
     sta REVERSE_MOVE_DIRECTION
@@ -308,10 +296,6 @@ FrameLoop:
     ldx COLLISION_FLAG
     cpx #$01
     beq UndoMove
-
-    
-
-
     EndOfMove:
 
     lda #%00000001 ; A Button
@@ -339,11 +323,49 @@ FrameLoop:
     EndOfDeathCheck:
     
     rts
+
+
+
+SetNegativeYV:
+    lda #$fe
+    sta PLAYERYV_HIGH
+    lda #$00
+    sta PLAYERYV_LOW
+    jmp EndOfJumpUp
+JumpUp:
+    ldx GROUND_FLAG
+    cpx #$01
+    beq SetNegativeYV
+    
+    jmp EndOfJumpUp
+MoveRight:
+    inc RUN_TIMER
+    lda %01000000 ; Face Right
+    sta PLAYERATTR
+    lda #$01
+    sta MOVE_DIRECTION
+    lda #$ff
+    sta REVERSE_MOVE_DIRECTION
+    jmp EndOfMoveLeftRight
+MoveLeft:
+    inc RUN_TIMER
+    lda %00000000 ; Face Left
+    sta PLAYERATTR
+    lda #$ff
+    sta MOVE_DIRECTION
+    lda #$01
+    sta REVERSE_MOVE_DIRECTION
+    jmp EndOfMoveLeftRight
 Death:
     dec LIVES_COUNT
     lda #$08
     sta PLAYERX
     sta PLAYERY
+    sta PLAYERY_HIGH
+    lda #$00
+    sta PLAYERY_LOW
+    sta PLAYERYV_HIGH
+    sta PLAYERYV_LOW
     jmp EndOfDeathCheck
 
 NMI:
