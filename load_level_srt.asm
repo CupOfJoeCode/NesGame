@@ -1,43 +1,46 @@
-LoadBackground:
+LoadBackground_SRT:
   LDA $2002             ; read PPU status to reset the high/low latch
   LDA #$20
   STA $2006             ; write the high byte of $2000 address
   LDA #$00
   STA $2006             ; write the low byte of $2000 address
-  LDX #$00              ; start out at 0
-  JMP StartLoadNameTable
-NAMETABLEOUT = $2007
-CURRENT_TILE = $02
+  TAX              ; start out at 0
+
+  
+  
+  
+  JMP StartLoadNameTable_SRT
 
 
-SetAGrass:
+
+SetAGrass_SRT:
     lda #$01
     jmp EndCheckY
-SetAGround:
+SetAGround_SRT:
     lda #$02
     jmp EndCheckY
 
-SetWater:
+SetWater_SRT:
     lda #$06
     jmp EndCheckY
 
-SetBlank:
+SetBlank_SRT:
     lda #$00
     cpy #$0F
-    bcs SetWater
+    bcs SetWater_SRT
     jmp EndCheckY
-CheckY:
+CheckY_SRT:
     cpy CURRENT_TILE
-    beq SetAGrass
-    bcs SetAGround
+    beq SetAGrass_SRT
+    bcs SetAGround_SRT
     jmp EndCheckY
 
-StartLoadNameTable:
+StartLoadNameTable_SRT:
 ldy #$00
-LoadNametable:
+LoadNametable_SRT:
     ldx CURRENT_LEVEL
     
-    DrawLine:
+    DrawLine_SRT:
         lda LevelData,X
         and #$0f ; Get lower 4 bits
         sta CURRENT_TILE 
@@ -46,10 +49,11 @@ LoadNametable:
         stx TMPX
         ldx CURRENT_TILE
         cpx #$0F
-        bne CheckY
-        beq SetBlank
+        bne CheckY_SRT
+        beq SetBlank_SRT
         
-        EndCheckY:
+        EndCheckY_SRT:
+
         sta NAMETABLEOUT
         ldx TMPX
         inx
@@ -59,15 +63,16 @@ LoadNametable:
         clc
         adc #$01
         cmp #$20
-        bne DrawLine
+        bne DrawLine_SRT
     iny
     cpy #$1F
     
-    bne LoadNametable
-LoadAttribute:
-  LDA $2002             ; read PPU status to reset the high/low latch
-  LDA #$23
-  STA $2006             ; write the high byte of $23C0 address
-  LDA #$C0
-  STA $2006             ; write the low byte of $23C0 address
-  LDX #$00              ; start out at 0
+    bne LoadNametable_SRT
+; LoadAttribute_SRT:
+;   LDA $2002             ; read PPU status to reset the high/low latch
+;   LDA #$23
+;   STA $2006             ; write the high byte of $23C0 address
+;   LDA #$C0
+;   STA $2006             ; write the low byte of $23C0 address
+;   LDX #$00              ; start out at 0
+rts

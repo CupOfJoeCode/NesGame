@@ -29,7 +29,7 @@ MOVE_DIRECTION = $06
 REVERSE_MOVE_DIRECTION = $07
 RUN_TIMER = $08
 LIVES_COUNT = $09
-
+CURRENT_LEVEL = $0A
 
 
 PLAYERY_HIGH  = $10
@@ -182,6 +182,8 @@ CheckCurrentGroud:
     lsr 
     lsr
     lsr ; Divide By 8
+    clc
+    adc CURRENT_LEVEL
     tax
     lda LevelData,x
     and #$0f
@@ -244,7 +246,10 @@ UndoMove:
     jmp EndOfMove
 
 
-; TODO: 
+; TODO:
+;
+;   Fix loading new screen into nametable
+;
 ;   Fix player bobbing up and down
 ;   Add multiple screens
 ;   Add enemies   
@@ -323,9 +328,23 @@ FrameLoop:
     bcs Death
     EndOfDeathCheck:
     
+    ldx PLAYERX
+    cpx #$f8
+    bcs NextLevel
+    EndOfNextLevel:
+
     rts
 
-
+NextLevel:
+    lda #$08
+    sta PLAYERX
+    ; lda CURRENT_LEVEL
+    ; adc #$20
+    ; sta CURRENT_LEVEL
+    ; dec CURRENT_LEVEL
+    clc
+    ; jsr LoadBackground_SRT
+    jmp EndOfNextLevel
 
 SetNegativeYV:
     lda #$fe
@@ -367,6 +386,8 @@ Death:
     sta PLAYERY_LOW
     sta PLAYERYV_HIGH
     sta PLAYERYV_LOW
+    ; sta CURRENT_LEVEL
+    ; jsr LoadBackground_SRT
     jmp EndOfDeathCheck
 
 NMI:
@@ -376,6 +397,7 @@ NMI:
     jsr FrameLoop
     rti
 
+.include "load_level_srt.asm"
 
 .include "game_data/level_data.asm"
 
